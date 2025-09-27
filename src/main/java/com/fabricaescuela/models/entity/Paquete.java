@@ -1,47 +1,44 @@
 package com.fabricaescuela.models.entity;
 
-import jakarta.persistence.*; // Agregar esta importación
-import jakarta.validation.constraints.Size;
-import lombok.*;
-import java.time.LocalDateTime;
-import java.util.List;
 
-@Entity
-@Table(name = "paquetes")
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity
+@Table(name = "\"Paquetes\"")
 public class Paquete {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "\"idPaquete\"", nullable = false)
+    private Integer id;
 
-    //private String codigo;   // Identificador único del paquete
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"idEmpleadoResponsable\"")
+    private Empleado idEmpleadoResponsable;
 
+    @Size(max = 255)
+    @Column(name = "\"codigoPaquete\"")
+    private String codigoPaquete;
+
+    @Size(max = 70)
+    @Column(name = "remitente", length = 70)
     private String remitente;
 
-    private String descripcion;
-
+    @Size(max = 70)
+    @Column(name = "destinatario", length = 70)
     private String destinatario;
 
-    private String direccionDestino;
+    @Column(name = "\"fechaRegistro\"")
+    private LocalDate fechaRegistro;
 
-    private LocalDateTime fechaRegistro;
+    @Size(max = 30)
+    @Column(name = "destino", length = 30)
+    private String destino;
 
-    @Enumerated(EnumType.STRING)
-    private Estado estado;
-
-    @Column(unique = true)
-    @Size(min = 3, max = 50)
-    private String codigo;   // Identificador único del paquete
-
-    @OneToMany(mappedBy = "paquete", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HistorialEstado> historialEstados;
-
-    @OneToMany(mappedBy = "paquete", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Novedad> novedades;
 }
-

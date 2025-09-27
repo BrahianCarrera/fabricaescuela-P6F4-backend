@@ -1,17 +1,18 @@
 package com.fabricaescuela.models.dto;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class PaqueteResponseDto {
-    private Long id;
-    private String descripcion;
+    private Integer id;
+    private String codigoPaquete;
     private String remitente;
     private String destinatario;
-    private EstadoDto estado;
+    private String descripcion; // Si luego agregas descripción en la entidad
 }
+
 

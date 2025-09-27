@@ -1,32 +1,35 @@
 package com.fabricaescuela.models.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
-@Entity
-@Table(name = "novedades")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity
+@Table(name = "\"Novedades\"")
 public class Novedad {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "\"idNovedad\"", nullable = false)
+    private Integer id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"idPaquete\"")
+    private Paquete idPaquete;
+
+    @Size(max = 30)
+    @Column(name = "\"tipoNovedad\"", length = 30)
+    private String tipoNovedad;
+
+    @Size(max = 255)
+    @Column(name = "descripcion")
     private String descripcion;
 
-    private LocalDateTime fecha;
+    @Column(name = "\"fechaHora\"")
+    private LocalDate fechaHora;
 
-    @ManyToOne
-    @JoinColumn(name = "paquete_id", nullable = false)
-    private Paquete paquete;
-
-    @ManyToOne
-    @JoinColumn(name = "empleado_id")
-    private User empleado; // quien registró la novedad
 }

@@ -1,6 +1,5 @@
 package com.fabricaescuela.service;
 
-import com.fabricaescuela.models.dto.EstadoDto;
 import com.fabricaescuela.models.dto.PaqueteResponseDto;
 import com.fabricaescuela.models.entity.Paquete;
 import com.fabricaescuela.repository.PaqueteRepository;
@@ -19,18 +18,15 @@ public class PaqueteServiceImpl implements PaqueteService {
 
     @Override
     public Optional<PaqueteResponseDto> consultarPorCodigo(String codigo) {
-        Optional<Paquete> paqueteOpt = paqueteRepository.findByCodigo(codigo);
+        Optional<Paquete> paqueteOpt = paqueteRepository.findByCodigoPaquete(codigo);
 
         return paqueteOpt.map(paquete ->
                 PaqueteResponseDto.builder()
                         .id(paquete.getId())
-                        .descripcion(paquete.getDescripcion())
+                        .codigoPaquete(paquete.getCodigoPaquete())
                         .remitente(paquete.getRemitente())
                         .destinatario(paquete.getDestinatario())
-                        .estado(EstadoDto.builder()
-                                .id(null)
-                                .nombre(paquete.getEstado().name()) // Usar .name() para convertir enum a String
-                                .build())
+                        .descripcion("...") // Si agregas descripción en la entidad, cambiar aquí
                         .build()
         );
     }

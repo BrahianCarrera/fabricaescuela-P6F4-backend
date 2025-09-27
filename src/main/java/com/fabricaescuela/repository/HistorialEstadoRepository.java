@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface HistorialEstadoRepository extends JpaRepository<HistorialEstado, Long> {
 
-    List<HistorialEstado> findByPaquete_Id(Long paqueteId);
+    List<HistorialEstado> findByIdPaquete_Id(Long idPaquete);
 }
 

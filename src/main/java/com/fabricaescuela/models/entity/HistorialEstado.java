@@ -1,33 +1,42 @@
 package com.fabricaescuela.models.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import java.time.LocalDate;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-@Entity
-@Table(name = "historial_estados")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Entity
+@Table(name = "\"HistorialEstados\"")
 public class HistorialEstado {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "\"idHistoriaEstadol\"", nullable = false)
+    private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "paquete_id", nullable = false)
-    private Paquete paquete;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"idEmpleado\"")
+    private Empleado idEmpleado;
 
-    @Enumerated(EnumType.STRING)
-    private Estado estado;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"idPaquete\"")
+    private Paquete idPaquete; // El nombre debe coincidir con el método del repositorio
 
-    private LocalDateTime fechaCambio;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "\"idEstado\"")
+    private Estado idEstado;
 
-    @ManyToOne
-    @JoinColumn(name = "empleado_id")
-    private User empleado; // el empleado que hizo el cambio
+    @Column(name = "\"fechaHora\"")
+    private LocalDate fechaHora;
+
 }

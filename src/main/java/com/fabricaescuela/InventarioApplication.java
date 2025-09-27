@@ -1,4 +1,4 @@
-package com.fabricaescuela.inventario;
+package com.fabricaescuela;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
