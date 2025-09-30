@@ -1,5 +1,5 @@
 # Multi-stage build para optimizar el tamaño de la imagen
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+FROM eclipse-temurin:21 as Build
 
 # Establecer directorio de trabajo
 WORKDIR /app
@@ -19,7 +19,7 @@ COPY src src
 RUN mvn clean package -DskipTests
 
 # Imagen de runtime
-FROM eclipse-temurin:21-jdk-slim
+FROM eclipse-temurin:21
 
 # Instalar curl para health checks
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
