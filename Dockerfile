@@ -1,5 +1,5 @@
 # Multi-stage build para optimizar el tamaño de la imagen
-FROM eclipse-temurin:21 as Build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 # Establecer directorio de trabajo
 WORKDIR /app
@@ -8,6 +8,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY mvnw .
 COPY .mvn .mvn
+
 
 
 # Copiar código fuente
