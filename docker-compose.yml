@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: inventario-postgres
+    environment:
+      POSTGRES_DB: inventario_db
+      POSTGRES_USER: inventario_user
+      POSTGRES_PASSWORD: inventario_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - inventario-network
+
+  # Aplicación Spring Boot
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inventario-app
+    environment:
+      # Configuración de la base de datos para Docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventario_db
+      SPRING_DATASOURCE_USERNAME: inventario_user
+      SPRING_DATASOURCE_PASSWORD: inventario_password
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: true
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: true
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - inventario-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  inventario-network:
+    driver: bridge
