@@ -1,17 +1,21 @@
 # 🚚 fabricaescuela-P6F4-2025 – CourierSync  
 
+[![CI/CD Pipeline](https://github.com/JUAN-VILLOTA/fabricaescuela-P6F4-2025/actions/workflows/build.yml/badge.svg)](https://github.com/JUAN-VILLOTA/fabricaescuela-P6F4-2025/actions/workflows/build.yml) 
+
 CourierSync es un sistema web para optimizar los procesos logísticos de transporte y distribución.  
 Este repositorio corresponde a la **Feature 4: Control de Inventario en Tránsito** dentro del proyecto de la Fábrica Escuela.  
 
 ---
 
 ## ⚙️ Tecnologías utilizadas  
-- **Java 17**  
-- **Spring Boot** (framework principal)  
+- **Java 21**  
+- **Spring Boot 3.5.5** (framework principal)  
 - **Maven** (gestor de dependencias y construcción)  
 - **JPA/Hibernate** (persistencia de datos)  
 - **PostgreSQL** (base de datos)  
-- **Swagger** (documentación y prueba de endpoints REST)  
+- **Swagger/OpenAPI** (documentación y prueba de endpoints REST)  
+- **Spring Security** (seguridad y autenticación)  
+- **JWT** (JSON Web Tokens para autenticación)  
 
 ---
 
@@ -37,6 +41,7 @@ En esta primera fase se cuenta con:
 - Proyecto base en Spring Boot estructurado por capas (controllers, services, repository, entity).  
 - Implementación inicial de historias de usuario priorizadas en el Sprint 1.  
 - Exposición de endpoints mediante **Swagger**.  
+- Sistema de autenticación JWT integrado con microservicio de login.  
 
 ---
 
