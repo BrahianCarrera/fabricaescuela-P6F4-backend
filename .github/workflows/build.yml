@@ -19,11 +19,11 @@ jobs:
     steps:
       #Check-out your repository under $GITHUB_WORKSPACE, so your workflow can access it
       - uses: actions/checkout@v1
-      #Set up JDK 11
+      #Set up JDK 21
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
       #Set up Maven cache
       - name: Cache Maven packages
