@@ -92,6 +92,7 @@
             </configuration>
 			</plugin>
 		</plugins>
+		<finalName>fe</finalName>
 	</build>
 
 </project>
