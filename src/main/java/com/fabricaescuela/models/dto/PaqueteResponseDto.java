@@ -12,7 +12,9 @@ public class PaqueteResponseDto {
     private String codigoPaquete;
     private String remitente;
     private String destinatario;
-    private String descripcion; // Si luego agregas descripción en la entidad
+    private String destino;
+    private String estadoActual;
+    private String descripcion;
 }
 
 

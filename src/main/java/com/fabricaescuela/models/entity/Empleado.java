@@ -36,6 +36,6 @@ public class Empleado {
     private String correo;
 
     @Column(name = "telefono")
-    private Integer telefono;
+    private Long telefono;
 
 }
