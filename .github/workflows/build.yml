@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Check-out your repository under $GITHUB_WORKSPACE, so your workflow can access it
+      - uses: actions/checkout@v1
+      
+      # Set up JDK 21
+      - name: Set up JDK 21 and cache Maven
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Verificar Java
+        run: |
+          java -version
+          mvn -v
+      
+      # Set up Maven cache
+      - name: Cache Maven packages
+        # This action allows caching dependencies and build outputs to improve workflow execution time.
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+      
+      # Run Tests
+      - name: Run Tests
+        run: mvn -B test

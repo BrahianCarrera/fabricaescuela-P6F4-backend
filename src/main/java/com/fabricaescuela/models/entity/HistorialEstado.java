@@ -17,26 +17,26 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "\"HistorialEstados\"")
+@Table(name = "historial_estados")
 public class HistorialEstado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "\"idHistoriaEstadol\"", nullable = false)
+    @Column(name = "idHistoriaEstadol", nullable = false)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "\"idEmpleado\"")
+    @JoinColumn(name = "idEmpleado")
     private Empleado idEmpleado;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "\"idPaquete\"")
+    @JoinColumn(name = "idPaquete")
     private Paquete idPaquete; // El nombre debe coincidir con el método del repositorio
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "\"idEstado\"")
+    @JoinColumn(name = "idEstado")
     private Estado idEstado;
 
-    @Column(name = "\"fechaHora\"")
+    @Column(name = "fechaHora")
     private LocalDate fechaHora;
 
 }

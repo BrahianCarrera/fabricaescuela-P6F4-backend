@@ -1,12 +1,15 @@
 package com.fabricaescuela.repository;
 
-import com.fabricaescuela.models.entity.HistorialEstado;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import com.fabricaescuela.models.entity.HistorialEstado;
 
-public interface HistorialEstadoRepository extends JpaRepository<HistorialEstado, Long> {
+public interface HistorialEstadoRepository extends JpaRepository<HistorialEstado, Integer> {
+    List<HistorialEstado> findByIdPaquete_Id(Integer idPaquete);
 
-    List<HistorialEstado> findByIdPaquete_Id(Long idPaquete);
+    Optional<HistorialEstado> findTopByIdPaquete_IdOrderByFechaHoraDesc(Integer idPaquete);
 }
 

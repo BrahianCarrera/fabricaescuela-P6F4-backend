@@ -13,19 +13,19 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "\"Estados\"")
+@Table(name = "estados")
 public class Estado {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "\"idEstado\"", nullable = false)
+    @Column(name = "idEstado", nullable = false)
     private Integer id;
 
     @Size(max = 30)
-    @Column(name = "\"nombreEstado\"", length = 30)
+    @Column(name = "nombreEstado", length = 30)
     private String nombreEstado;
 
     @Size(max = 255)
-    @Column(name = "\"descripcionEstado\"")
+    @Column(name = "descripcionEstado")
     private String descripcionEstado;
 
 }
