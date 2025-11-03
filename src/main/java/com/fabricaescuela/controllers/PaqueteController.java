@@ -54,8 +54,32 @@ public class PaqueteController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Actualizar dirección de un paquete en ruta",
-        description = "Permite modificar los campos de dirección cuando el paquete está en ruta")
+    @Operation(
+        summary = "Actualizar dirección de un paquete en ruta",
+        description = """
+            Permite modificar la dirección de destino y/o destinatario de un paquete que está en ruta.
+            
+            **Requisitos:**
+            - El paquete debe estar en estado "En Ruta"
+            - El código del paquete debe existir
+            - El campo 'destino' es obligatorio
+            - El campo 'destinatario' es opcional
+            
+            **Ejemplo de payload (JSON):**
+            ```json
+            {
+              "destino": "Cali, Valle del Cauca",
+              "destinatario": "Juan Pérez García"
+            }
+            ```
+            
+            **Respuestas:**
+            - 200: Dirección actualizada exitosamente
+            - 400: Paquete no está en estado "En Ruta"
+            - 404: Paquete no encontrado
+            - 401: Token JWT inválido o no proporcionado
+            """
+    )
     @PutMapping("/en-ruta/{codigo}/direccion")
     public ResponseEntity<PaqueteResponseDto> actualizarDireccion(
             @PathVariable String codigo,

@@ -31,7 +31,36 @@ public class NovedadController {
         this.novedadService = novedadService;
     }
 
-    @Operation(summary = "Registrar nueva novedad", description = "Crea una nueva novedad asociada a un paquete")
+    @Operation(
+        summary = "Registrar nueva novedad", 
+        description = """
+            Crea una nueva novedad asociada a un paquete en el sistema.
+            
+            **Campos requeridos:**
+            - idPaquete (objeto): {id: numero_entero}
+            - tipoNovedad (string): Tipo de incidencia (max 30 caracteres)
+            - descripcion (string): Descripción detallada (max 255 caracteres)
+            - fechaHora (date): Fecha en formato ISO (YYYY-MM-DD)
+            
+            **Ejemplo de payload (JSON):**
+            ```json
+            {
+              "idPaquete": {
+                "id": 1
+              },
+              "tipoNovedad": "Retraso en entrega",
+              "descripcion": "Demora por condiciones climáticas adversas en la ruta",
+              "fechaHora": "2025-11-02"
+            }
+            ```
+            
+            **Respuestas:**
+            - 201: Novedad creada exitosamente
+            - 400: Datos inválidos
+            - 401: No autenticado
+            - 500: Error interno del servidor
+            """
+    )
     @PostMapping
     public ResponseEntity<Novedad> registrarNovedad(@Valid @RequestBody Novedad novedad) {
         try {

@@ -43,7 +43,29 @@ public class EstadoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Crear un nuevo estado")
+    @Operation(
+        summary = "Crear un nuevo estado",
+        description = """
+            Crea un nuevo estado que puede ser asignado a los paquetes.
+            
+            **Campos requeridos:**
+            - nombreEstado (string): Nombre del estado (max 30 caracteres)
+            - descripcionEstado (string): Descripción del estado (max 255 caracteres)
+            
+            **Ejemplo de payload (JSON):**
+            ```json
+            {
+              "nombreEstado": "En Ruta",
+              "descripcionEstado": "El paquete está en camino hacia su destino"
+            }
+            ```
+            
+            **Respuestas:**
+            - 200: Estado creado exitosamente
+            - 400: Datos inválidos
+            - 401: No autenticado
+            """
+    )
     @PostMapping
     public ResponseEntity<Estado> createEstado(@RequestBody Estado estado) {
         return ResponseEntity.ok(estadoService.save(estado));

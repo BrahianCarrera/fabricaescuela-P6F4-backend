@@ -49,7 +49,39 @@ public class HistorialEstadoController {
         return ResponseEntity.ok(historialEstadoService.findByIdPaquete(idPaquete));
     }
 
-    @Operation(summary = "Crear un nuevo historial de estado")
+    @Operation(
+        summary = "Crear un nuevo historial de estado",
+        description = """
+            Registra un cambio de estado para un paquete específico.
+            
+            **Campos requeridos:**
+            - idPaquete (objeto): {id: numero_entero}
+            - idEstado (objeto): {id: numero_entero} 
+            - idEmpleado (objeto): {id: numero_entero}
+            - fechaHora (date): Fecha en formato ISO (YYYY-MM-DD)
+            
+            **Ejemplo de payload (JSON):**
+            ```json
+            {
+              "idPaquete": {
+                "id": 1
+              },
+              "idEstado": {
+                "id": 2
+              },
+              "idEmpleado": {
+                "id": 5
+              },
+              "fechaHora": "2025-11-02"
+            }
+            ```
+            
+            **Respuestas:**
+            - 200: Historial creado exitosamente
+            - 400: Datos inválidos
+            - 401: No autenticado
+            """
+    )
     @PostMapping
     public ResponseEntity<HistorialEstado> crear(@RequestBody HistorialEstado historialEstado) {
         return ResponseEntity.ok(historialEstadoService.save(historialEstado));

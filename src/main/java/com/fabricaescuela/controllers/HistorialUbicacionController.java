@@ -27,8 +27,31 @@ public class HistorialUbicacionController {
         this.historialUbicacionService = historialUbicacionService;
     }
 
-    @Operation(summary = "Registrar una nueva ubicación",
-            description = "Registra una nueva ubicación para el paquete y devuelve el registro almacenado")
+    @Operation(
+        summary = "Registrar una nueva ubicación",
+        description = """
+            Registra una nueva ubicación geográfica para el paquete en su ruta de entrega.
+            
+            **Parámetros de ruta:**
+            - codigoPaquete (string): Código único del paquete
+            
+            **Campos del body:**
+            - ubicacion (string): Descripción de la ubicación actual (max 255 caracteres)
+            
+            **Ejemplo de payload (JSON):**
+            ```json
+            {
+              "ubicacion": "Bodega Central Bogotá - Calle 100 #15-20"
+            }
+            ```
+            
+            **Respuestas:**
+            - 200: Ubicación registrada exitosamente
+            - 400: Datos inválidos
+            - 404: Paquete no encontrado
+            - 401: No autenticado
+            """
+    )
     @PostMapping
     public ResponseEntity<HistorialUbicacionResponse> registrarUbicacion(@PathVariable String codigoPaquete,
                                                                          @Valid @RequestBody HistorialUbicacionRequest request) {
