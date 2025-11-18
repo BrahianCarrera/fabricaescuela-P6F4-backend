@@ -19,6 +19,7 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // permite todas las rutas
                         .allowedOrigins(allowedOrigins) // orígenes permitidos desde properties
+     
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH") // métodos HTTP
                         .allowedHeaders("*") // todos los headers
                         .allowCredentials(true) // permite credenciales

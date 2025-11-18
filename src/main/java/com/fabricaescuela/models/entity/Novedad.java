@@ -12,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,12 +30,14 @@ public class Novedad {
     @Schema(description = "ID único de la novedad", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Integer id;
 
+    @NotNull(message = "El paquete es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idPaquete")
     @Schema(description = "Paquete asociado a la novedad", requiredMode = Schema.RequiredMode.REQUIRED)
     private Paquete idPaquete;
 
-    @Size(max = 30)
+    @NotBlank(message = "El tipo de novedad es obligatorio")
+    @Size(max = 30, message = "El tipo de novedad no puede exceder 30 caracteres")
     @Column(name = "tipoNovedad", length = 30)
     @Schema(
         description = "Tipo de novedad", 
@@ -43,7 +47,8 @@ public class Novedad {
     )
     private String tipoNovedad;
 
-    @Size(max = 255)
+    @NotBlank(message = "La descripción es obligatoria")
+    @Size(max = 255, message = "La descripción no puede exceder 255 caracteres")
     @Column(name = "descripcion")
     @Schema(
         description = "Descripción detallada de la novedad", 
@@ -52,6 +57,7 @@ public class Novedad {
     )
     private String descripcion;
 
+    @NotNull(message = "La fecha es obligatoria")
     @Column(name = "fechaHora")
     @Schema(
         description = "Fecha en que se registró la novedad", 
@@ -61,4 +67,7 @@ public class Novedad {
     )
     private LocalDate fechaHora;
 
+    // ⭐ SOLO GUARDAR EL ID DEL EMPLEADO ⭐
+    @Column(name = "idEmpleado")
+    private Integer idEmpleado;
 }

@@ -24,13 +24,13 @@ public class HistorialEstado {
     @Column(name = "idHistoriaEstadol", nullable = false)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idEmpleado")
-    private Empleado idEmpleado;
+    // ⭐ SOLO GUARDAR EL ID DEL EMPLEADO ⭐
+    @Column(name = "idEmpleado")
+    private Integer idEmpleado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idPaquete")
-    private Paquete idPaquete; // El nombre debe coincidir con el método del repositorio
+    private Paquete idPaquete;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idEstado")
@@ -38,5 +38,4 @@ public class HistorialEstado {
 
     @Column(name = "fechaHora")
     private LocalDate fechaHora;
-
 }

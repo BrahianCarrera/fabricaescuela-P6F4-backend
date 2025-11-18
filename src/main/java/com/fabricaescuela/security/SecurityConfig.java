@@ -1,5 +1,7 @@
 package com.fabricaescuela.security;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -46,7 +45,27 @@ public class SecurityConfig {
                 // ✅ Permitir health check
                 .requestMatchers("/actuator/health").permitAll()
 
-                // 🔒 TODO lo demás requiere autenticación
+                // ✅ Permitir todos los endpoints GET (consultas) sin autenticación
+                .requestMatchers(
+                    org.springframework.http.HttpMethod.GET,
+                    "/api/**"
+                ).permitAll()
+
+                // 🔒 Todos los métodos de modificación (POST, PUT, DELETE) requieren autenticación
+                .requestMatchers(
+                    org.springframework.http.HttpMethod.POST,
+                    "/api/**"
+                ).authenticated()
+                .requestMatchers(
+                    org.springframework.http.HttpMethod.PUT,
+                    "/api/**"
+                ).authenticated()
+                .requestMatchers(
+                    org.springframework.http.HttpMethod.DELETE,
+                    "/api/**"
+                ).authenticated()
+
+                // 🔒 Cualquier otra petición requiere autenticación
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
