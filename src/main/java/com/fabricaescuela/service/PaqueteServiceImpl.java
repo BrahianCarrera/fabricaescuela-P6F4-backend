@@ -1,5 +1,16 @@
 package com.fabricaescuela.service;
 
+import java.text.Normalizer;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.fabricaescuela.models.dto.PaqueteDireccionUpdateRequest;
 import com.fabricaescuela.models.dto.PaqueteResponseDto;
 import com.fabricaescuela.models.entity.Estado;
@@ -7,16 +18,6 @@ import com.fabricaescuela.models.entity.HistorialEstado;
 import com.fabricaescuela.models.entity.Paquete;
 import com.fabricaescuela.repository.HistorialEstadoRepository;
 import com.fabricaescuela.repository.PaqueteRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.text.Normalizer;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class PaqueteServiceImpl implements PaqueteService {
@@ -111,5 +112,31 @@ public class PaqueteServiceImpl implements PaqueteService {
         .toLowerCase(Locale.ROOT)
         .replaceAll("\\s", "");
         return normalizado.contains(ESTADO_EN_RUTA_TOKEN);
+    }
+    
+    // ⭐ NUEVOS MÉTODOS PARA VALIDACIÓN DE NOVEDADES ⭐
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Paquete> findById(Integer id) {
+        return paqueteRepository.findById(id);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isPaqueteEnTransito(Integer idPaquete) {
+        return paqueteRepository.isPaqueteEnTransito(idPaquete);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Paquete> findPaquetesEnTransito() {
+        return paqueteRepository.findPaquetesEnTransito();
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Paquete> buscarPorCriterios(String codigoPaquete, java.time.LocalDate fechaRegistro, String nombreEstado) {
+        return paqueteRepository.buscarPorCriterios(codigoPaquete, fechaRegistro, nombreEstado);
     }
 }

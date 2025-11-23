@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,20 +21,21 @@ import lombok.Setter;
 @Entity
 @Table(name = "historial_ubicaciones")
 public class HistorialUbicacion {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idHistorialUbicacion", nullable = false)
     private Integer id;
 
+    @NotNull(message = "El paquete es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idPaquete", nullable = false)
-    private Paquete paquete;
+    private Paquete idPaquete;  // ⭐ Cambié "paquete" a "idPaquete" para consistencia
 
-    @NotBlank
-    @Column(name = "ubicacion", length = Integer.MAX_VALUE)
+    @NotBlank(message = "La ubicación es obligatoria")
+    @Column(name = "ubicacion", columnDefinition = "TEXT")
     private String ubicacion;
 
     @Column(name = "fechaHora")
     private Instant fechaHora;
-
 }

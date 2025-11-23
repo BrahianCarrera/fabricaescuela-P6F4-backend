@@ -34,9 +34,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Skip JWT filter for Swagger and public endpoints
         String path = request.getRequestURI();
+        String method = request.getMethod();
+        
+        // Excluir Swagger, health check y todos los métodos GET en /api/**
         if (path != null && (path.startsWith("/swagger-ui") || 
             path.startsWith("/v3/api-docs") ||
-            path.startsWith("/actuator/health"))) {
+            path.startsWith("/actuator/health") ||
+            (method.equals("GET") && path.startsWith("/api/")))) {
             filterChain.doFilter(request, response);
             return;
         }

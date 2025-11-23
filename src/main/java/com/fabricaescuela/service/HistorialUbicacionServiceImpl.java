@@ -1,20 +1,21 @@
 package com.fabricaescuela.service;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.fabricaescuela.models.dto.HistorialUbicacionRequest;
 import com.fabricaescuela.models.dto.HistorialUbicacionResponse;
 import com.fabricaescuela.models.entity.HistorialUbicacion;
 import com.fabricaescuela.models.entity.Paquete;
 import com.fabricaescuela.repository.HistorialUbicacionRepository;
 import com.fabricaescuela.repository.PaqueteRepository;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class HistorialUbicacionServiceImpl implements HistorialUbicacionService {
@@ -35,7 +36,7 @@ public class HistorialUbicacionServiceImpl implements HistorialUbicacionService 
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paquete no encontrado"));
 
         HistorialUbicacion historial = new HistorialUbicacion();
-        historial.setPaquete(paquete);
+        historial.setIdPaquete(paquete);
         historial.setUbicacion(request.ubicacion());
         historial.setFechaHora(Instant.now());
 
@@ -49,7 +50,7 @@ public class HistorialUbicacionServiceImpl implements HistorialUbicacionService 
         Paquete paquete = paqueteRepository.findByCodigoPaquete(codigoPaquete)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paquete no encontrado"));
 
-        return historialUbicacionRepository.findByPaquete_IdOrderByFechaHoraDesc(paquete.getId()).stream()
+        return historialUbicacionRepository.findByIdPaquete_IdOrderByFechaHoraDesc(paquete.getId()).stream()
                 .map(historial -> mapToResponse(paquete, historial))
                 .collect(Collectors.toList());
     }
@@ -60,7 +61,7 @@ public class HistorialUbicacionServiceImpl implements HistorialUbicacionService 
         Paquete paquete = paqueteRepository.findByCodigoPaquete(codigoPaquete)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paquete no encontrado"));
 
-        return historialUbicacionRepository.findTopByPaquete_IdOrderByFechaHoraDesc(paquete.getId())
+        return historialUbicacionRepository.findTopByIdPaquete_IdOrderByFechaHoraDesc(paquete.getId())
                 .map(historial -> mapToResponse(paquete, historial));
     }
 
