@@ -38,6 +38,8 @@ public class SecurityConfig {
                         // Swagger sin autenticación
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**")
                         .permitAll()
+                        // ✅ Permitir OPTIONS para preflight checks de CORS
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // GET endpoints públicos (consultas sin JWT)
                         .requestMatchers(request -> "GET".equals(request.getMethod())
                                 && request.getRequestURI().startsWith("/api/"))
