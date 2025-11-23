@@ -39,6 +39,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Excluir Swagger, health check y todos los métodos GET en /api/**
         if (path != null && (path.startsWith("/swagger-ui") || 
             path.startsWith("/v3/api-docs") ||
+            path.startsWith("/swagger-resources") ||
+            path.startsWith("/webjars") ||
+            path.startsWith("/configuration") ||
             path.startsWith("/actuator/health") ||
             (method.equals("GET") && path.startsWith("/api/")))) {
             filterChain.doFilter(request, response);
@@ -50,13 +53,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
+        // 🔒 Detectar si es una ruta protegida (POST/PUT/DELETE en /api/**)
+        boolean isProtectedRoute = path != null && path.startsWith("/api/") && 
+                                   (method.equals("POST") || method.equals("PUT") || method.equals("DELETE"));
+
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
             } catch (Exception e) {
-                logger.error("Error al extraer username del token: " + e.getMessage());
+                logger.error("❌ Error al extraer username del token: " + e.getMessage());
+                // Si es ruta protegida y el token es inválido, responder 401
+                if (isProtectedRoute) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Token JWT inválido o expirado\"}");
+                    return;
+                }
             }
+        } else if (isProtectedRoute) {
+            // ❌ Ruta protegida SIN token JWT → responder 401
+            logger.warn("⚠️ Intento de acceso a ruta protegida sin token: {} {}", method, path);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Se requiere autenticación. Token JWT no proporcionado.\"}");
+            return;
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -77,6 +98,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                logger.info("✅ Usuario autenticado: {} con rol: {}", username, role);
+            } else if (isProtectedRoute) {
+                // ❌ Token inválido en ruta protegida
+                logger.error("❌ Token JWT inválido para usuario: {}", username);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\": \"Token JWT inválido o expirado\"}");
+                return;
             }
         }
 
