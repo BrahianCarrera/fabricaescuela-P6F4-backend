@@ -1,13 +1,13 @@
-# Etapa de construcción
-FROM maven:3.8.1-openjdk-17 AS build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Etapa de empaquetado (runtime)
-FROM openjdk:17-jdk
+FROM eclipse-temurin:21-jre
 WORKDIR /app
-# Copia el JAR de la etapa 'build' a la etapa actual
-COPY --from=build /app/target/fe.jar  fe.jar
+
+# Copia el JAR generado desde la etapa anterior
+COPY --from=build /app/target/fe.jar fe.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","fe.jar"]
+ENTRYPOINT ["java", "-jar", "fe.jar"]
