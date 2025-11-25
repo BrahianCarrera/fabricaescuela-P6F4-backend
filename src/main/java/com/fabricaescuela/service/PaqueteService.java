@@ -38,6 +38,11 @@ public interface PaqueteService {
      * Búsqueda flexible por múltiples criterios
      */
     List<Paquete> buscarPorCriterios(String codigoPaquete, LocalDate fechaRegistro, String nombreEstado);
+    
+    /**
+     * Actualizar el estado de un paquete
+     */
+    PaqueteResponseDto actualizarEstado(String codigoPaquete, String nombreEstado);
 }
 
 

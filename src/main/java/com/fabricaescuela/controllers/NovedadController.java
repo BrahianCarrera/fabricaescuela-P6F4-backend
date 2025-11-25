@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fabricaescuela.models.dto.ActualizarNovedadRequest;
+import com.fabricaescuela.models.dto.NovedadRequest;
 import com.fabricaescuela.models.entity.Novedad;
+import com.fabricaescuela.models.entity.Paquete;
 import com.fabricaescuela.service.NovedadService;
 import com.fabricaescuela.service.PaqueteService;
 
@@ -44,7 +48,7 @@ public class NovedadController {
             
             **⚠️ VALIDACIONES AUTOMÁTICAS:**
             1. El paquete debe existir en el sistema
-            2. El paquete debe estar en estado EN_TRANSITO
+            2. El paquete debe estar en estado "En transito"
             3. Todos los campos son obligatorios y deben cumplir con las longitudes máximas
             
             **Campos requeridos:**
@@ -56,9 +60,7 @@ public class NovedadController {
             **Ejemplo de payload correcto:**
             ```json
             {
-              "idPaquete": {
-                "id": 1
-              },
+              "idPaquete": 1,
               "tipoNovedad": "Retraso en entrega",
               "descripcion": "Demora por condiciones climáticas adversas en la ruta",
               "fechaHora": "2025-11-17"
@@ -72,11 +74,12 @@ public class NovedadController {
             - 500 INTERNAL SERVER ERROR: Error del servidor
             """
     )
+    @PreAuthorize("hasAuthority('NOVEDAD_CREATE')")
     @PostMapping
-    public ResponseEntity<?> registrarNovedad(@Valid @RequestBody Novedad novedad) {
+    public ResponseEntity<?> registrarNovedad(@Valid @RequestBody NovedadRequest request) {
         try {
             // Obtener el ID del paquete
-            Integer idPaquete = novedad.getIdPaquete().getId();
+            Integer idPaquete = request.getIdPaquete();
             
             // ✅ VALIDACIÓN 1: Verificar que el paquete existe
             if (!paqueteService.findById(idPaquete).isPresent()) {
@@ -92,14 +95,22 @@ public class NovedadController {
             if (!paqueteService.isPaqueteEnTransito(idPaquete)) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("error", "El paquete no está en tránsito");
-                error.put("detalle", "Solo se pueden registrar novedades para paquetes en estado EN_TRANSITO");
+                error.put("detalle", "Solo se pueden registrar novedades para paquetes en estado 'En transito'");
                 error.put("idPaquete", idPaquete);
                 error.put("sugerencia", "Consulte el estado actual del paquete en /api/paquetes/" + idPaquete);
                 error.put("ayuda", "Para ver todos los paquetes en tránsito: GET /api/paquetes/en-transito");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
             }
             
-            // ✅ Si pasa las validaciones, registrar la novedad
+            // ✅ Si pasa las validaciones, crear la novedad
+            Novedad novedad = new Novedad();
+            Paquete paquete = new Paquete();
+            paquete.setId(idPaquete);
+            novedad.setIdPaquete(paquete);
+            novedad.setTipoNovedad(request.getTipoNovedad());
+            novedad.setDescripcion(request.getDescripcion());
+            novedad.setFechaHora(request.getFechaHora());
+            
             Novedad nuevaNovedad = novedadService.registrarNovedad(novedad);
             
             // ⭐ MENSAJE DE CONFIRMACIÓN EXITOSA ⭐
@@ -134,6 +145,7 @@ public class NovedadController {
     }
 
     @Operation(summary = "Obtener todas las novedades", description = "Retorna el listado completo de novedades")
+    @PreAuthorize("hasAuthority('NOVEDAD_VIEW')")
     @GetMapping
     public ResponseEntity<?> obtenerTodasLasNovedades() {
         try {
@@ -160,6 +172,7 @@ public class NovedadController {
     }
 
     @Operation(summary = "Obtener novedad por ID", description = "Retorna una novedad específica por su identificador")
+    @PreAuthorize("hasAuthority('NOVEDAD_VIEW')")
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerNovedadPorId(@PathVariable("id") Integer id) {
         Optional<Novedad> novedadOpt = novedadService.obtenerNovedadPorId(id);
@@ -178,6 +191,7 @@ public class NovedadController {
         summary = "Obtener novedades por ID de paquete", 
         description = "Retorna todas las novedades asociadas a un paquete específico (historial de incidencias)"
     )
+    @PreAuthorize("hasAuthority('NOVEDAD_VIEW')")
     @GetMapping("/paquete/{idPaquete}")
     public ResponseEntity<?> obtenerNovedadesPorPaquete(@PathVariable Integer idPaquete) {
         try {
@@ -215,26 +229,57 @@ public class NovedadController {
         }
     }
 
-    @Operation(summary = "Actualizar novedad", description = "Actualiza los datos de una novedad existente")
+    @Operation(
+        summary = "Actualizar novedad", 
+        description = """
+            Actualiza los datos de una novedad existente.
+            
+            **Solo se pueden actualizar:**
+            - tipoNovedad: Tipo de incidencia (max 50 caracteres)
+            - descripcion: Descripción detallada (max 255 caracteres)
+            - fechaHora: Fecha de la novedad (formato ISO: YYYY-MM-DD)
+            
+            **Ejemplo de payload:**
+            ```json
+            {
+              "tipoNovedad": "Retraso corregido",
+              "descripcion": "El paquete ya fue entregado correctamente",
+              "fechaHora": "2025-11-24"
+            }
+            ```
+            """
+    )
+    @PreAuthorize("hasAuthority('NOVEDAD_UPDATE')")
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarNovedad(
         @PathVariable("id") Integer id, 
-        @Valid @RequestBody Novedad novedad
+        @Valid @RequestBody ActualizarNovedadRequest request
     ) {
         try {
-            Novedad novedadActualizada = novedadService.actualizarNovedad(id, novedad);
+            // Buscar novedad existente
+            Optional<Novedad> novedadOpt = novedadService.obtenerNovedadPorId(id);
             
-            if (novedadActualizada != null) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("mensaje", "Novedad actualizada exitosamente");
-                response.put("novedad", novedadActualizada);
-                return ResponseEntity.ok(response);
-            } else {
+            if (!novedadOpt.isPresent()) {
                 Map<String, Object> error = new HashMap<>();
                 error.put("error", "Novedad no encontrada");
                 error.put("id", id);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
+            
+            // Actualizar solo los campos permitidos
+            Novedad novedad = novedadOpt.get();
+            novedad.setTipoNovedad(request.getTipoNovedad());
+            novedad.setDescripcion(request.getDescripcion());
+            if (request.getFechaHora() != null) {
+                novedad.setFechaHora(request.getFechaHora());
+            }
+            
+            Novedad novedadActualizada = novedadService.actualizarNovedad(id, novedad);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("mensaje", "✅ Novedad actualizada exitosamente");
+            response.put("novedad", novedadActualizada);
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -245,6 +290,7 @@ public class NovedadController {
     }
 
     @Operation(summary = "Eliminar novedad", description = "Elimina una novedad por su ID")
+    @PreAuthorize("hasAuthority('NOVEDAD_DELETE')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarNovedad(@PathVariable("id") Integer id) {
         try {

@@ -1,9 +1,10 @@
 package com.fabricaescuela.security;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,10 +14,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -36,13 +37,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
         
-        // Excluir Swagger, health check y todos los métodos GET en /api/**
+        // Excluir Swagger, /error, health check y todos los métodos GET en /api/**
         if (path != null && (path.startsWith("/swagger-ui") || 
             path.startsWith("/v3/api-docs") ||
             path.startsWith("/swagger-resources") ||
             path.startsWith("/webjars") ||
             path.startsWith("/configuration") ||
             path.startsWith("/actuator/health") ||
+            path.equals("/error") ||
             (method.equals("GET") && path.startsWith("/api/")))) {
             filterChain.doFilter(request, response);
             return;
@@ -78,34 +80,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Se requiere autenticación. Token JWT no proporcionado.\"}");
             return;
+        } else {
+            // 🌐 GET sin token → permitir acceso (endpoints públicos)
+            logger.debug("✅ Acceso público permitido: {} {}", method, path);
+            filterChain.doFilter(request, response);
+            return;
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtUtil.validateToken(jwt, username)) {
-                String role = jwtUtil.extractRole(jwt);
-                List<String> permisos = jwtUtil.extractPermisos(jwt);
+            try {
+                if (jwtUtil.validateToken(jwt, username)) {
+                    String role = jwtUtil.extractRole(jwt);
+                    List<String> permisos = jwtUtil.extractPermisos(jwt);
 
-                List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                if (permisos != null) {
-                    authorities = permisos.stream()
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
+                    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                    if (permisos != null) {
+                        authorities = permisos.stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList());
+                    }
+                    authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
+
+                    UsernamePasswordAuthenticationToken authenticationToken = 
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    logger.info("✅ Usuario autenticado: {} con rol: {}", username, role);
+                } else if (isProtectedRoute) {
+                    // ❌ Token inválido en ruta protegida
+                    logger.error("❌ Token JWT inválido para usuario: {}", username);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Token JWT inválido o expirado. Por favor, inicie sesión nuevamente.\"}");
+                    return;
                 }
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
-
-                UsernamePasswordAuthenticationToken authenticationToken = 
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                logger.info("✅ Usuario autenticado: {} con rol: {}", username, role);
-            } else if (isProtectedRoute) {
-                // ❌ Token inválido en ruta protegida
-                logger.error("❌ Token JWT inválido para usuario: {}", username);
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"Token JWT inválido o expirado\"}");
-                return;
+            } catch (Exception e) {
+                logger.error("❌ Error validando token JWT: {}", e.getMessage());
+                if (isProtectedRoute) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"Token JWT inválido o expirado. Error: " + e.getMessage() + "\"}");
+                    return;
+                }
             }
         }
 
