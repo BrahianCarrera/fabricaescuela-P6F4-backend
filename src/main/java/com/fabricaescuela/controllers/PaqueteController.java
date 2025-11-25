@@ -238,6 +238,29 @@ public class PaqueteController {
         return ResponseEntity.ok(paqueteService.actualizarDireccion(codigo, request));
     }
 
+    @Operation(summary = "Actualizar estado de un paquete",
+            description = "Cambia el estado actual del paquete y registra el cambio en el historial")
+    @PutMapping("/{codigo}/estado")
+    public ResponseEntity<?> actualizarEstado(
+            @PathVariable String codigo,
+            @RequestParam String nuevoEstado) {
+        try {
+            PaqueteResponseDto paquete = paqueteService.actualizarEstado(codigo, nuevoEstado);
+            Map<String, Object> response = new HashMap<>();
+            response.put("mensaje", "Estado actualizado exitosamente");
+            response.put("paquete", paquete);
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Error al actualizar el estado: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
     @Operation(summary = "Ping",
             description = "Endpoint de prueba para verificar que el servicio está activo")
     @GetMapping("/ping")

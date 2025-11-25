@@ -2,6 +2,8 @@ package com.fabricaescuela.models.entity;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,6 +23,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "paquetes")  // ✅ Tabla "paquetes"
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Paquete {      // ✅ Clase "Paquete"
     
     @Id

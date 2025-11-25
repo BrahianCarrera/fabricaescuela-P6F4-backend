@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -37,8 +38,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Swagger sin autenticación
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-resources/**", "/webjars/**").permitAll()
+                // Error endpoint (para manejar excepciones del controller)
+                .requestMatchers("/error").permitAll()
                 // GET endpoints públicos (consultas sin JWT)
-                .requestMatchers(request -> "GET".equals(request.getMethod()) && request.getRequestURI().startsWith("/api/")).permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
                 // POST, PUT, DELETE requieren JWT
                 .anyRequest().authenticated()
             )

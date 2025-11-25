@@ -16,6 +16,7 @@ import com.fabricaescuela.models.dto.PaqueteResponseDto;
 import com.fabricaescuela.models.entity.Estado;
 import com.fabricaescuela.models.entity.HistorialEstado;
 import com.fabricaescuela.models.entity.Paquete;
+import com.fabricaescuela.repository.EstadoRepository;
 import com.fabricaescuela.repository.HistorialEstadoRepository;
 import com.fabricaescuela.repository.PaqueteRepository;
 
@@ -26,11 +27,14 @@ public class PaqueteServiceImpl implements PaqueteService {
 
     private final PaqueteRepository paqueteRepository;
     private final HistorialEstadoRepository historialEstadoRepository;
+    private final EstadoRepository estadoRepository;
 
     public PaqueteServiceImpl(PaqueteRepository paqueteRepository,
-                              HistorialEstadoRepository historialEstadoRepository) {
+                              HistorialEstadoRepository historialEstadoRepository,
+                              EstadoRepository estadoRepository) {
         this.paqueteRepository = paqueteRepository;
         this.historialEstadoRepository = historialEstadoRepository;
+        this.estadoRepository = estadoRepository;
     }
 
     @Override
@@ -138,5 +142,41 @@ public class PaqueteServiceImpl implements PaqueteService {
     @Transactional(readOnly = true)
     public List<Paquete> buscarPorCriterios(String codigoPaquete, java.time.LocalDate fechaRegistro, String nombreEstado) {
         return paqueteRepository.buscarPorCriterios(codigoPaquete, fechaRegistro, nombreEstado);
+    }
+    
+    @Override
+    @Transactional
+    public PaqueteResponseDto actualizarEstado(String codigoPaquete, String nombreEstado) {
+        // Buscar el paquete
+        Paquete paquete = paqueteRepository.findByCodigoPaquete(codigoPaquete)
+            .orElseThrow(() -> new IllegalArgumentException("Paquete no encontrado: " + codigoPaquete));
+
+        // Normalizar el nombre del estado para comparación flexible
+        String estadoBuscado = nombreEstado.trim().toLowerCase();
+        
+        // Buscar el estado en la base de datos
+        Estado nuevoEstado = estadoRepository.findAll().stream()
+            .filter(e -> e.getNombreEstado() != null && 
+                        e.getNombreEstado().toLowerCase().equals(estadoBuscado))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException(
+                "Estado no encontrado: " + nombreEstado + ". Estados disponibles: " + 
+                estadoRepository.findAll().stream()
+                    .map(Estado::getNombreEstado)
+                    .collect(Collectors.joining(", "))
+            ));
+
+        // Actualizar el estado del paquete
+        paquete.setIdEstadoActual(nuevoEstado);
+        Paquete paqueteActualizado = paqueteRepository.save(paquete);
+
+        // Registrar en el historial de estados
+        HistorialEstado historial = new HistorialEstado();
+        historial.setIdPaquete(paquete);
+        historial.setIdEstado(nuevoEstado);
+        historial.setFechaHora(java.time.LocalDate.now());
+        historialEstadoRepository.save(historial);
+
+        return mapToDto(paqueteActualizado, nuevoEstado);
     }
 }
